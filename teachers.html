@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оценка преподавателей | Рейтинг звёздами</title>
+    <title>Оценка преподавателей</title>
     <style>
         * {
             margin: 0;
@@ -73,7 +73,7 @@
             margin-top: 8px;
         }
 
-        /* Блок выбора кафедры */
+        
         .dept-selector {
             background: #f8fafd;
             border-radius: 60px;
@@ -206,7 +206,7 @@
             font-size: 1.2rem;
         }
 
-        /* Модальное окно (звёздная оценка + комментарий) */
+        
         .modal {
             display: none;
             position: fixed;
@@ -356,10 +356,9 @@
         <a href="index.html">Главная</a>
         <a href="kaf.html">Кафедры</a>
         <a href="teachers.html">Преподаватели</a>
-        <a href="history.html">Преподаватели</a>
-        <a href="artists.html">Программы ДПО</a>
-        <a href="poll.html">Клинические базы</a>
-        <a href="video.html">Авторизация</a>
+        <a href="dpo.html">Программы ДПО</a>
+        <a href="bases.html">Клинические базы</a>
+        <a href="auth.html">Авторизация</a>
         <a href="https://astgmu.ru/spisok-kafedr/" target="_blank" style="background:#eef2fa; border-radius:40px; padding:6px 16px;">📖 Список кафедр АГМУ</a>
     </nav>
 
@@ -381,7 +380,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно для оценки преподавателя -->
+    
     <div id="ratingModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -412,7 +411,7 @@
     </div>
 
     <script>
-        // -------- СПИСОК КАФЕДР (с сайта АГМУ) ----------
+    
         const departments = [
             "Кафедра акушерства и гинекологии лечебного факультета",
             "Кафедра акушерства и гинекологии педиатрического факультета с курсом последипломного образования",
@@ -480,13 +479,11 @@
             "Кафедра экстремальной медицины и безопасности жизнедеятельности"
         ];
 
-        // ---- ГЕНЕРАЦИЯ ПРЕПОДАВАТЕЛЕЙ ДЛЯ КАЖДОЙ КАФЕДРЫ (демо-данные, можно расширять) ----
-        // Здесь для каждой кафедры создаём список преподавателей (должности + имена)
+        
         function generateTeachersForDept(deptName) {
-            // Создаём уникальный, но правдоподобный набор. Для реального использования можно подгружать с бэка.
-            // В рамках демо — генерируем от 2 до 5 преподавателей в зависимости от кафедры.
+            
             const seed = deptName.length;
-            const count = 3 + (seed % 4); // от 3 до 6 преподавателей
+            const count = 3 + (seed % 4); 
             const teachers = [];
             const positions = ["Профессор", "Доцент", "Старший преподаватель", "Ассистент", "Заведующий кафедрой", "Кандидат медицинских наук"];
             const firstNames = ["Александр", "Елена", "Михаил", "Ольга", "Дмитрий", "Ирина", "Сергей", "Татьяна", "Анна", "Владимир", "Наталья", "Павел", "Юлия"];
@@ -497,12 +494,12 @@
                 let lastName = lastNames[(seed * (i+1)) % lastNames.length];
                 let position = positions[(seed + i) % positions.length];
                 let fullName = `${firstName} ${lastName}`;
-                // уникализируем, чтобы не повторялось
+               
                 teachers.push({
                     id: `${deptName.substring(0,10)}_${i}`,
                     name: fullName,
                     position: position,
-                    // Храним средний рейтинг и количество голосов (для демо)
+                   
                     avgRating: (Math.random() * 2 + 3).toFixed(1), // 3.0 - 5.0
                     votesCount: Math.floor(Math.random() * 40) + 1
                 });
@@ -510,10 +507,10 @@
             return teachers;
         }
 
-        // Хранилище оценок преподавателей (в памяти, для демонстрации обновления рейтинга)
+        
         let teachersRatingsStore = {};
 
-        // Получить актуальный рейтинг преподавателя
+       
         function getTeacherRating(deptName, teacherId, currentAvg, currentVotes) {
             const key = `${deptName}|${teacherId}`;
             if (teachersRatingsStore[key]) {
@@ -522,7 +519,7 @@
             return { avg: parseFloat(currentAvg), votes: currentVotes };
         }
 
-        // Обновить рейтинг (добавить новую оценку)
+       
         function updateTeacherRating(deptName, teacherId, newStars, oldRatingObj) {
             const key = `${deptName}|${teacherId}`;
             let oldAvg = oldRatingObj.avg;
@@ -534,7 +531,7 @@
             return { avg: newAvg, votes: newVotes };
         }
 
-        // отрисовка карточек преподавателей для выбранной кафедры
+       
         function renderTeachers(deptName) {
             const container = document.getElementById('teachersContainer');
             if (!deptName) {
@@ -571,7 +568,7 @@
             });
             container.innerHTML = html;
             
-            // навесить обработчики на кнопки
+            
             document.querySelectorAll('.feedback-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const dept = btn.getAttribute('data-dept');
@@ -594,7 +591,7 @@
             });
         }
 
-        // ---------- Модальное окно для оценки ----------
+        
         let currentTeacherId = null;
         let currentDepartmentName = null;
         let currentTeacherName = null;
@@ -605,7 +602,7 @@
             currentTeacherName = teacherName;
             document.getElementById('modalTeacherName').innerText = teacherName;
             document.getElementById('modalDeptName').innerText = deptName;
-            // сброс формы
+            
             const form = document.getElementById('teacherRatingForm');
             if (form) form.reset();
             const radios = document.querySelectorAll('input[name="modalRating"]');
@@ -619,7 +616,7 @@
             document.getElementById('ratingModal').style.display = 'none';
         }
 
-        // обновление подписи звёзд
+       
         function updateModalRatingCaption() {
             const radios = document.querySelectorAll('input[name="modalRating"]');
             let val = null;
@@ -633,7 +630,7 @@
             else caption.innerText = 'Нажмите на звезду';
         }
 
-        // Отправка оценки
+        
         function submitTeacherRating(event) {
             event.preventDefault();
             const ratingInput = document.querySelector('input[name="modalRating"]:checked');
@@ -648,7 +645,7 @@
                 return;
             }
             
-            // Получаем старые данные рейтинга (заново сгенерируем преподавателя, чтобы взять актуальные)
+            
             const teachersList = generateTeachersForDept(currentDepartmentName);
             const teacherFound = teachersList.find(t => t.id === currentTeacherId);
             if (teacherFound) {
@@ -657,16 +654,16 @@
                 alert(`✅ Спасибо! Вы оценили ${currentTeacherName} на ${ratingValue} звёзд.\nКомментарий: ${comment.substring(0, 120)}`);
             } else {
                 alert(`✅ Оценка сохранена для ${currentTeacherName} (${ratingValue}★). Спасибо за отзыв!`);
-                // всё равно добавим в хранилище, если преподаватель не найден (но такого не будет)
+                
                 const fakeOld = { avg: 4.0, votes: 1 };
                 updateTeacherRating(currentDepartmentName, currentTeacherId, ratingValue, fakeOld);
             }
             closeRatingModal();
-            // перерисовываем текущую кафедру, чтобы обновить рейтинг
+            
             renderTeachers(currentDepartmentName);
         }
 
-        // Заполнить select кафедр
+       
         function populateDepartments() {
             const select = document.getElementById('departmentSelect');
             select.innerHTML = '<option value="">-- Выберите кафедру --</option>';
@@ -683,7 +680,7 @@
             });
         }
 
-        // инициализация модальных событий
+        
         function bindModalEvents() {
             const stars = document.querySelectorAll('#modalStarRating input');
             stars.forEach(star => star.addEventListener('change', updateModalRatingCaption));

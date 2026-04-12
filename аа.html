@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оценка преподавателей | Рейтинг звёздами</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
+            color: #1e2a3e;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #ffffff;
+            padding: 18px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        nav a {
+            margin: 0 18px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #0f3b6f;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: #0a2b44;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            color: #2c3e4e;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* Блок выбора кафедры */
+        .dept-selector {
+            background: #f8fafd;
+            border-radius: 60px;
+            padding: 8px 20px;
+            margin-bottom: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            border: 1px solid #e2edf7;
+        }
+
+        .dept-selector label {
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 1.1rem;
+        }
+
+        .dept-selector select {
+            padding: 12px 24px;
+            border-radius: 40px;
+            border: 2px solid #cbdde9;
+            background: white;
+            font-size: 1rem;
+            min-width: 280px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #0a2b44;
+            transition: all 0.2s;
+        }
+
+        .dept-selector select:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+        }
+
+        .teachers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 28px;
+            margin-top: 20px;
+        }
+
+        .teacher-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 22px 24px 26px;
+            border: 3px solid #9bb7d4;
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .teacher-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 40px -14px rgba(0, 0, 0, 0.12);
+            border-color: #1e5b9e;
+        }
+
+        .teacher-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f3b6f;
+            margin-bottom: 6px;
+            letter-spacing: -0.2px;
+        }
+
+        .teacher-position {
+            font-size: 0.85rem;
+            color: #4f6f8f;
+            margin-bottom: 16px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+
+        .rating-stars-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            background: #f0f4fa;
+            padding: 8px 12px;
+            border-radius: 50px;
+            width: fit-content;
+        }
+
+        .stars-static {
+            color: #f5b301;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .rating-value {
+            font-weight: bold;
+            color: #1e5b9e;
+        }
+
+        .feedback-btn {
+            background: #1a5d9c;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .feedback-btn:hover {
+            background: #0f4a7a;
+            transform: scale(1.01);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f9fbfe;
+            border-radius: 48px;
+            color: #5a6e85;
+            font-size: 1.2rem;
+        }
+
+        /* Модальное окно (звёздная оценка + комментарий) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            padding: 32px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+            border: 1px solid #e2edf7;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0edf9;
+            padding-bottom: 12px;
+        }
+
+        .modal-header h2 {
+            color: #0a2b44;
+            font-size: 1.6rem;
+        }
+
+        .close-btn {
+            font-size: 32px;
+            cursor: pointer;
+            color: #8ba0bc;
+        }
+
+        .close-btn:hover {
+            color: #1e5b9e;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 8px;
+            margin: 10px 0 5px;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 34px;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .star-rating label:before {
+            content: "★";
+        }
+
+        .star-rating input:checked ~ label {
+            color: #f5b301;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffcd4a;
+        }
+
+        .rating-caption {
+            margin-left: 8px;
+            font-size: 0.85rem;
+            color: #4a627a;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #1e3a5f;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #d4e0ec;
+            border-radius: 20px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        .submit-btn {
+            background: #1a5d9c;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 40px;
+            width: 100%;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #0f4a7a;
+        }
+
+        @media (max-width: 680px) {
+            .container { padding: 16px; }
+            .dept-selector select { min-width: 220px; }
+            .teacher-name { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="kaf.html">Кафедры</a>
+        <a href="teachers.html">Преподаватели</a>
+        <a href="history.html">Преподаватели</a>
+        <a href="artists.html">Программы ДПО</a>
+        <a href="poll.html">Клинические базы</a>
+        <a href="video.html">Авторизация</a>
+        <a href="https://astgmu.ru/spisok-kafedr/" target="_blank" style="background:#eef2fa; border-radius:40px; padding:6px 16px;">📖 Список кафедр АГМУ</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>👩‍🏫 Оценка преподавателей</h1>
+            <p>Выберите кафедру, чтобы увидеть преподавателей и поставить оценку (5 звёзд + комментарий)</p>
+        </div>
+
+        <div class="dept-selector">
+            <label>🏛️ Выберите кафедру:</label>
+            <select id="departmentSelect">
+                <option value="">-- Загрузка кафедр --</option>
+            </select>
+        </div>
+
+        <div id="teachersContainer" class="teachers-grid">
+            <div class="empty-state">✨ Выберите кафедру, чтобы увидеть преподавательский состав</div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для оценки преподавателя -->
+    <div id="ratingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⭐ Оценить преподавателя</h2>
+                <span class="close-btn" onclick="closeRatingModal()">&times;</span>
+            </div>
+            <p><strong>Преподаватель:</strong> <span id="modalTeacherName" class="department-name"></span></p>
+            <p><strong>Кафедра:</strong> <span id="modalDeptName"></span></p>
+            <form id="teacherRatingForm">
+                <div class="form-group">
+                    <label>🌟 Оценка (1–5 звёзд):</label>
+                    <div class="star-rating" id="modalStarRating">
+                        <input type="radio" id="modStar5" name="modalRating" value="5"><label for="modStar5" title="5 - Отлично"></label>
+                        <input type="radio" id="modStar4" name="modalRating" value="4"><label for="modStar4" title="4 - Хорошо"></label>
+                        <input type="radio" id="modStar3" name="modalRating" value="3"><label for="modStar3" title="3 - Удовлетворительно"></label>
+                        <input type="radio" id="modStar2" name="modalRating" value="2"><label for="modStar2" title="2 - Неудовлетворительно"></label>
+                        <input type="radio" id="modStar1" name="modalRating" value="1"><label for="modStar1" title="1 - Плохо"></label>
+                    </div>
+                    <div class="rating-caption" id="modalRatingCaption">Нажмите на звезду</div>
+                </div>
+                <div class="form-group">
+                    <label>💬 Ваш комментарий (отзыв о преподавателе):</label>
+                    <textarea id="modalComment" rows="3" placeholder="Профессионализм, подход к студентам, качество лекций..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">📨 Отправить оценку</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // -------- СПИСОК КАФЕДР (с сайта АГМУ) ----------
+        const departments = [
+            "Кафедра акушерства и гинекологии лечебного факультета",
+            "Кафедра акушерства и гинекологии педиатрического факультета с курсом последипломного образования",
+            "Кафедра анатомии",
+            "Кафедра анестезиологии и реаниматологии",
+            "Кафедра биологии и ботаники",
+            "Кафедра биологической химии и клинической лабораторной диагностики",
+            "Кафедра внутренних болезней педиатрического факультета",
+            "Кафедра гигиены медико-профилактического факультета с курсом последипломного образования",
+            "Кафедра гистологии и эмбриологии",
+            "Кафедра госпитальной педиатрии и неонатологии",
+            "Кафедра госпитальной терапии",
+            "Кафедра госпитальной хирургии",
+            "Кафедра детских инфекций",
+            "Кафедра детской хирургии",
+            "Кафедра иностранных и латинского языков",
+            "Кафедра инфекционных болезней и эпидемиологии",
+            "Кафедра кардиологии ФПО",
+            "Кафедра клинической иммунологии с курсом последипломного образования",
+            "Кафедра клинической фармакологии",
+            "Кафедра лучевой диагностики",
+            "Кафедра медицинской реабилитации",
+            "Кафедра микробиологии и вирусологии",
+            "Кафедра наркологии, психотерапии",
+            "Кафедра неврологии и нейрохирургии с курсом последипломного образования",
+            "Кафедра нормальной физиологии",
+            "Кафедра общей гигиены",
+            "Кафедра общей хирургии с курсом последипломного образования",
+            "Кафедра общественного здоровья и здравоохранения с курсом последипломного образования",
+            "Кафедра онкологии и лучевой терапии",
+            "Кафедра ортопедической стоматологии",
+            "Кафедра оториноларингологии и офтальмологии",
+            "Кафедра патологической анатомии",
+            "Кафедра патологической физиологии",
+            "Кафедра поликлинического дела и скорой медицинской помощи с курсом семейной медицины",
+            "Кафедра пропедевтики внутренних болезней",
+            "Кафедра пропедевтики детских болезней, поликлинической и неотложной педиатрии",
+            "Кафедра профилактической медицины и здорового образа жизни",
+            "Кафедра психиатрии",
+            "Кафедра психологии и педагогики",
+            "Кафедра российской государственности и медицинского права",
+            "Кафедра русского языка",
+            "Кафедра сердечно-сосудистой хирургии ФПО",
+            "Кафедра сестринского дела и ухода за больными",
+            "Кафедра стоматологии и челюстно-лицевой хирургии с курсом последипломного образования",
+            "Кафедра судебной медицины",
+            "Кафедра терапевтической и детской стоматологии с курсом последипломного образования",
+            "Кафедра топографической анатомии и оперативной хирургии",
+            "Кафедра травматологии и ортопедии",
+            "Кафедра урологии",
+            "Кафедра факультетской педиатрии",
+            "Кафедра факультетской терапии и профессиональных болезней с курсом последипломного образования",
+            "Кафедра факультетской хирургии",
+            "Кафедра фармакологии",
+            "Кафедра фармакогнозии, фармацевтической технологии и биотехнологии",
+            "Кафедра физики, прикладной информатики и цифровой медицины",
+            "Кафедра физической культуры",
+            "Кафедра философии, биоэтики, истории и социологии",
+            "Кафедра фтизиатрии",
+            "Кафедра фундаментальной химии",
+            "Кафедра хирургических болезней педиатрического факультета",
+            "Кафедра хирургических болезней последипломного образования с курсом колопроктологии",
+            "Кафедра хирургических болезней стоматологического факультета",
+            "Кафедра экономики и управления здравоохранением с курсом последипломного образования",
+            "Кафедра экстремальной медицины и безопасности жизнедеятельности"
+        ];
+
+        // ---- ГЕНЕРАЦИЯ ПРЕПОДАВАТЕЛЕЙ ДЛЯ КАЖДОЙ КАФЕДРЫ (демо-данные, можно расширять) ----
+        // Здесь для каждой кафедры создаём список преподавателей (должности + имена)
+        function generateTeachersForDept(deptName) {
+            // Создаём уникальный, но правдоподобный набор. Для реального использования можно подгружать с бэка.
+            // В рамках демо — генерируем от 2 до 5 преподавателей в зависимости от кафедры.
+            const seed = deptName.length;
+            const count = 3 + (seed % 4); // от 3 до 6 преподавателей
+            const teachers = [];
+            const positions = ["Профессор", "Доцент", "Старший преподаватель", "Ассистент", "Заведующий кафедрой", "Кандидат медицинских наук"];
+            const firstNames = ["Александр", "Елена", "Михаил", "Ольга", "Дмитрий", "Ирина", "Сергей", "Татьяна", "Анна", "Владимир", "Наталья", "Павел", "Юлия"];
+            const lastNames = ["Волков", "Морозова", "Кузнецов", "Смирнова", "Попов", "Лебедева", "Соколов", "Новикова", "Козлов", "Петрова", "Васильев", "Зайцева"];
+            
+            for (let i = 0; i < count; i++) {
+                let firstName = firstNames[(seed + i) % firstNames.length];
+                let lastName = lastNames[(seed * (i+1)) % lastNames.length];
+                let position = positions[(seed + i) % positions.length];
+                let fullName = `${firstName} ${lastName}`;
+                // уникализируем, чтобы не повторялось
+                teachers.push({
+                    id: `${deptName.substring(0,10)}_${i}`,
+                    name: fullName,
+                    position: position,
+                    // Храним средний рейтинг и количество голосов (для демо)
+                    avgRating: (Math.random() * 2 + 3).toFixed(1), // 3.0 - 5.0
+                    votesCount: Math.floor(Math.random() * 40) + 1
+                });
+            }
+            return teachers;
+        }
+
+        // Хранилище оценок преподавателей (в памяти, для демонстрации обновления рейтинга)
+        let teachersRatingsStore = {};
+
+        // Получить актуальный рейтинг преподавателя
+        function getTeacherRating(deptName, teacherId, currentAvg, currentVotes) {
+            const key = `${deptName}|${teacherId}`;
+            if (teachersRatingsStore[key]) {
+                return teachersRatingsStore[key];
+            }
+            return { avg: parseFloat(currentAvg), votes: currentVotes };
+        }
+
+        // Обновить рейтинг (добавить новую оценку)
+        function updateTeacherRating(deptName, teacherId, newStars, oldRatingObj) {
+            const key = `${deptName}|${teacherId}`;
+            let oldAvg = oldRatingObj.avg;
+            let oldVotes = oldRatingObj.votes;
+            let newVotes = oldVotes + 1;
+            let newAvg = (oldAvg * oldVotes + newStars) / newVotes;
+            newAvg = Math.round(newAvg * 10) / 10;
+            teachersRatingsStore[key] = { avg: newAvg, votes: newVotes };
+            return { avg: newAvg, votes: newVotes };
+        }
+
+        // отрисовка карточек преподавателей для выбранной кафедры
+        function renderTeachers(deptName) {
+            const container = document.getElementById('teachersContainer');
+            if (!deptName) {
+                container.innerHTML = `<div class="empty-state">📌 Выберите кафедру из списка выше</div>`;
+                return;
+            }
+            const teachersList = generateTeachersForDept(deptName);
+            if (!teachersList.length) {
+                container.innerHTML = `<div class="empty-state">На данной кафедре пока нет данных о преподавателях.</div>`;
+                return;
+            }
+            
+            let html = '';
+            teachersList.forEach(teacher => {
+                const ratingData = getTeacherRating(deptName, teacher.id, teacher.avgRating, teacher.votesCount);
+                const avg = ratingData.avg;
+                const votes = ratingData.votes;
+                const fullStars = Math.floor(avg);
+                const starDisplay = '★'.repeat(fullStars) + '☆'.repeat(5-fullStars);
+                html += `
+                    <div class="teacher-card">
+                        <div class="teacher-name">${escapeHtml(teacher.name)}</div>
+                        <div class="teacher-position">${escapeHtml(teacher.position)}</div>
+                        <div class="rating-stars-display">
+                            <span class="stars-static">${starDisplay}</span>
+                            <span class="rating-value">${avg.toFixed(1)}</span>
+                            <span style="font-size:0.75rem;">(${votes} оценок)</span>
+                        </div>
+                        <button class="feedback-btn" data-dept="${escapeHtml(deptName)}" data-teacher='${JSON.stringify({id: teacher.id, name: teacher.name, avg: avg, votes: votes})}'>
+                            ⭐ Оценить преподавателя
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            
+            // навесить обработчики на кнопки
+            document.querySelectorAll('.feedback-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const dept = btn.getAttribute('data-dept');
+                    const teacherRaw = btn.getAttribute('data-teacher');
+                    const teacherObj = JSON.parse(teacherRaw);
+                    openRatingModal(dept, teacherObj.id, teacherObj.name);
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        // ---------- Модальное окно для оценки ----------
+        let currentTeacherId = null;
+        let currentDepartmentName = null;
+        let currentTeacherName = null;
+
+        function openRatingModal(deptName, teacherId, teacherName) {
+            currentTeacherId = teacherId;
+            currentDepartmentName = deptName;
+            currentTeacherName = teacherName;
+            document.getElementById('modalTeacherName').innerText = teacherName;
+            document.getElementById('modalDeptName').innerText = deptName;
+            // сброс формы
+            const form = document.getElementById('teacherRatingForm');
+            if (form) form.reset();
+            const radios = document.querySelectorAll('input[name="modalRating"]');
+            radios.forEach(r => r.checked = false);
+            document.getElementById('modalRatingCaption').innerText = 'Нажмите на звезду';
+            document.getElementById('modalComment').value = '';
+            document.getElementById('ratingModal').style.display = 'block';
+        }
+
+        function closeRatingModal() {
+            document.getElementById('ratingModal').style.display = 'none';
+        }
+
+        // обновление подписи звёзд
+        function updateModalRatingCaption() {
+            const radios = document.querySelectorAll('input[name="modalRating"]');
+            let val = null;
+            for (let r of radios) if (r.checked) { val = r.value; break; }
+            const caption = document.getElementById('modalRatingCaption');
+            if (val === '5') caption.innerText = '⭐ Отлично (5)';
+            else if (val === '4') caption.innerText = '👍 Хорошо (4)';
+            else if (val === '3') caption.innerText = '😐 Удовлетворительно (3)';
+            else if (val === '2') caption.innerText = '😟 Неудовлетворительно (2)';
+            else if (val === '1') caption.innerText = '👎 Плохо (1)';
+            else caption.innerText = 'Нажмите на звезду';
+        }
+
+        // Отправка оценки
+        function submitTeacherRating(event) {
+            event.preventDefault();
+            const ratingInput = document.querySelector('input[name="modalRating"]:checked');
+            if (!ratingInput) {
+                alert('Пожалуйста, выберите оценку от 1 до 5 звёзд');
+                return;
+            }
+            const ratingValue = parseInt(ratingInput.value);
+            const comment = document.getElementById('modalComment').value.trim();
+            if (comment === '') {
+                alert('Напишите, пожалуйста, комментарий о преподавателе');
+                return;
+            }
+            
+            // Получаем старые данные рейтинга (заново сгенерируем преподавателя, чтобы взять актуальные)
+            const teachersList = generateTeachersForDept(currentDepartmentName);
+            const teacherFound = teachersList.find(t => t.id === currentTeacherId);
+            if (teacherFound) {
+                const oldRating = getTeacherRating(currentDepartmentName, currentTeacherId, teacherFound.avgRating, teacherFound.votesCount);
+                const newRatingObj = updateTeacherRating(currentDepartmentName, currentTeacherId, ratingValue, oldRating);
+                alert(`✅ Спасибо! Вы оценили ${currentTeacherName} на ${ratingValue} звёзд.\nКомментарий: ${comment.substring(0, 120)}`);
+            } else {
+                alert(`✅ Оценка сохранена для ${currentTeacherName} (${ratingValue}★). Спасибо за отзыв!`);
+                // всё равно добавим в хранилище, если преподаватель не найден (но такого не будет)
+                const fakeOld = { avg: 4.0, votes: 1 };
+                updateTeacherRating(currentDepartmentName, currentTeacherId, ratingValue, fakeOld);
+            }
+            closeRatingModal();
+            // перерисовываем текущую кафедру, чтобы обновить рейтинг
+            renderTeachers(currentDepartmentName);
+        }
+
+        // Заполнить select кафедр
+        function populateDepartments() {
+            const select = document.getElementById('departmentSelect');
+            select.innerHTML = '<option value="">-- Выберите кафедру --</option>';
+            departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                select.appendChild(option);
+            });
+            select.addEventListener('change', (e) => {
+                const selected = e.target.value;
+                if (selected) renderTeachers(selected);
+                else document.getElementById('teachersContainer').innerHTML = '<div class="empty-state">📌 Выберите кафедру из списка</div>';
+            });
+        }
+
+        // инициализация модальных событий
+        function bindModalEvents() {
+            const stars = document.querySelectorAll('#modalStarRating input');
+            stars.forEach(star => star.addEventListener('change', updateModalRatingCaption));
+            const form = document.getElementById('teacherRatingForm');
+            form.addEventListener('submit', submitTeacherRating);
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('ratingModal');
+                if (e.target === modal) closeRatingModal();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateDepartments();
+            bindModalEvents();
+        });
+    </script>
+</body>
+</html>

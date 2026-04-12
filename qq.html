@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оценка ДПО | Рейтинг кафедр</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
+            color: #1e2a3e;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Навигация — светлая */
+        nav {
+            background: #ffffff;
+            padding: 18px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        nav a {
+            margin: 0 18px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #0f3b6f;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: #0a2b44;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .page-header p {
+            color: #2c3e4e;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* Сетка кафедр для удобного отображения большого списка */
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 28px;
+        }
+
+        .department-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 24px 24px 28px 24px;
+            border: 3px solid #9bb7d4;
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .department-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 40px -14px rgba(0, 0, 0, 0.12), 0 6px 14px rgba(0, 0, 0, 0.05);
+            border-color: #1e5b9e;
+        }
+
+        .department-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #0f3b6f;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1a73e8;
+            display: inline-block;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
+        }
+
+        .department-description {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            flex-grow: 1;
+        }
+
+        .feedback-btn {
+            background: #1a5d9c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .feedback-btn:hover {
+            background: #0f4a7a;
+            transform: scale(1.02);
+            box-shadow: 0 6px 14px rgba(26, 93, 156, 0.25);
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            padding: 32px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 550px;
+            animation: slideIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid #e2edf7;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -55%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0edf9;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #0a2b44;
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            font-size: 32px;
+            cursor: pointer;
+            color: #8ba0bc;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #1e5b9e;
+        }
+
+        .modal p {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .department-name {
+            color: #1a5d9c;
+            font-weight: 700;
+            background: #eef4fc;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Стили для звёздного рейтинга */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 32px;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .star-rating label:before {
+            content: "★";
+        }
+
+        .star-rating input:checked ~ label {
+            color: #f5b301;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffcd4a;
+        }
+
+        .rating-caption {
+            margin-left: 8px;
+            font-size: 0.85rem;
+            color: #4a627a;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #d4e0ec;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: #fefefe;
+            color: #1e2a3e;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .submit-btn {
+            background: #1a5d9c;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.25s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            background: #0f4a7a;
+            transform: scale(1.01);
+            box-shadow: 0 6px 12px rgba(26, 93, 156, 0.2);
+        }
+
+        @media (max-width: 760px) {
+            .container {
+                padding: 16px;
+                margin: 20px auto;
+            }
+            .department-card {
+                padding: 18px;
+            }
+            .department-title {
+                font-size: 1.2rem;
+            }
+            nav a {
+                margin: 0 10px;
+                font-size: 15px;
+            }
+            .modal-content {
+                padding: 24px;
+                width: 92%;
+            }
+            .star-rating label {
+                font-size: 28px;
+            }
+        }
+
+        .info-note {
+            font-size: 0.75rem;
+            color: #6c86a3;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .dpo-badge {
+            background: linear-gradient(135deg, #1a5d9c 0%, #0f3b6f 100%);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="kaf.html">Кафедры</a>
+        <a href="history.html">Преподаватели</a>
+        <a href="artists.html">Программы ДПО</a>
+        <a href="poll.html">Клинические базы</a>
+        <a href="video.html">Авторизация</a>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>📚 Оценка ДПО<span class="dpo-badge">Дополнительное профессиональное образование</span></h1>
+            <p>Оцените качество программ дополнительного профессионального образования, курсов повышения квалификации и профессиональной переподготовки, реализуемых кафедрой</p>
+        </div>
+
+        <div class="departments-grid" id="departmentsList">
+            <!-- Список кафедр будет вставлен через JS -->
+        </div>
+        <div class="info-note">★ Оцените ДПО-активность кафедры: актуальность программ, компетентность преподавателей, доступность материалов и практическую пользу. Ваш отзыв поможет улучшить качество дополнительного образования!</div>
+    </div>
+    
+    <!-- Модальное окно -->
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎓 Оценка ДПО кафедры</h2>
+                <span class="close-btn" onclick="closeFormModal()">&times;</span>
+            </div>
+            <p>Кафедра: <span id="selectedDepartment" class="department-name"></span></p>
+            <p style="font-size:0.85rem; margin-top:-10px; color:#4a627a;">Оцените реализацию программ ДПО (повышение квалификации, профпереподготовка, стажировки)</p>
+            
+            <form id="feedbackForm" onsubmit="submitForm(event)">
+                <!-- Звёздная оценка (5 баллов) -->
+                <div class="form-group">
+                    <label>🌟 Оценка качества ДПО (1–5 звёзд):</label>
+                    <div class="star-rating">
+                        <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 - Превосходное ДПО"></label>
+                        <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 - Хорошее ДПО"></label>
+                        <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 - Удовлетворительное ДПО"></label>
+                        <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 - Неудовлетворительное ДПО"></label>
+                        <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 - Крайне низкое качество ДПО"></label>
+                    </div>
+                    <div class="rating-caption" id="ratingCaption">Выберите оценку программ ДПО</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>💬 Комментарий о ДПО (актуальность, организация, польза для практики, пожелания):</label>
+                    <textarea id="feedbackComment" placeholder="Например: «Курсы повышения квалификации по неотложной помощи были очень полезны, но хотелось бы больше практических занятий. Программа профпереподготовки актуальна, спасибо!»"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">📨 Отправить отзыв о ДПО</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Полный список кафедр (такой же, как в исходной странице, но контекст — оценка ДПО)
+        const departmentsList = [
+            "Кафедра акушерства и гинекологии лечебного факультета",
+            "Кафедра акушерства и гинекологии педиатрического факультета с курсом последипломного образования",
+            "Кафедра анатомии",
+            "Кафедра анестезиологии и реаниматологии",
+            "Кафедра биологии и ботаники",
+            "Кафедра биологической химии и клинической лабораторной диагностики",
+            "Кафедра внутренних болезней педиатрического факультета",
+            "Кафедра гигиены медико-профилактического факультета с курсом последипломного образования",
+            "Кафедра гистологии и эмбриологии",
+            "Кафедра госпитальной педиатрии и неонатологии",
+            "Кафедра госпитальной терапии",
+            "Кафедра госпитальной хирургии",
+            "Кафедра детских инфекций",
+            "Кафедра детской хирургии",
+            "Кафедра иностранных и латинского языков",
+            "Кафедра инфекционных болезней и эпидемиологии",
+            "Кафедра кардиологии ФПО",
+            "Кафедра клинической иммунологии с курсом последипломного образования",
+            "Кафедра клинической фармакологии",
+            "Кафедра лучевой диагностики",
+            "Кафедра медицинской реабилитации",
+            "Кафедра микробиологии и вирусологии",
+            "Кафедра наркологии, психотерапии",
+            "Кафедра неврологии и нейрохирургии с курсом последипломного образования",
+            "Кафедра нормальной физиологии",
+            "Кафедра общей гигиены",
+            "Кафедра общей хирургии с курсом последипломного образования",
+            "Кафедра общественного здоровья и здравоохранения с курсом последипломного образования",
+            "Кафедра онкологии и лучевой терапии",
+            "Кафедра ортопедической стоматологии",
+            "Кафедра оториноларингологии и офтальмологии",
+            "Кафедра патологической анатомии",
+            "Кафедра патологической физиологии",
+            "Кафедра поликлинического дела и скорой медицинской помощи с курсом семейной медицины",
+            "Кафедра пропедевтики внутренних болезней",
+            "Кафедра пропедевтики детских болезней, поликлинической и неотложной педиатрии",
+            "Кафедра профилактической медицины и здорового образа жизни",
+            "Кафедра психиатрии",
+            "Кафедра психологии и педагогики",
+            "Кафедра российской государственности и медицинского права",
+            "Кафедра русского языка",
+            "Кафедра сердечно-сосудистой хирургии ФПО",
+            "Кафедра сестринского дела и ухода за больными",
+            "Кафедра стоматологии и челюстно-лицевой хирургии с курсом последипломного образования",
+            "Кафедра судебной медицины",
+            "Кафедра терапевтической и детской стоматологии с курсом последипломного образования",
+            "Кафедра топографической анатомии и оперативной хирургии",
+            "Кафедра травматологии и ортопедии",
+            "Кафедра урологии",
+            "Кафедра факультетской педиатрии",
+            "Кафедра факультетской терапии и профессиональных болезней с курсом последипломного образования",
+            "Кафедра факультетской хирургии",
+            "Кафедра фармакологии",
+            "Кафедра фармакогнозии, фармацевтической технологии и биотехнологии",
+            "Кафедра физики, прикладной информатики и цифровой медицины",
+            "Кафедра физической культуры",
+            "Кафедра философии, биоэтики, истории и социологии",
+            "Кафедра фтизиатрии",
+            "Кафедра фундаментальной химии",
+            "Кафедра хирургических болезней педиатрического факультета",
+            "Кафедра хирургических болезней последипломного образования с курсом колопроктологии",
+            "Кафедра хирургических болезней стоматологического факультета",
+            "Кафедра экономики и управления здравоохранением с курсом последипломного образования",
+            "Кафедра экстремальной медицины и безопасности жизнедеятельности"
+        ];
+
+        // Функция для генерации описания с акцентом на ДПО (повышение квалификации, профпереподготовку)
+        function getDescriptionForDepartment(deptName) {
+            if (deptName.includes("акушерства") && deptName.includes("гинекологии")) 
+                return "ДПО-программы: современные перинатальные технологии, репродуктивная медицина, циклы усовершенствования для врачей акушеров-гинекологов.";
+            if (deptName.includes("анатомии")) 
+                return "Курсы повышения квалификации по клинической анатомии, секционные курсы, мастер-классы для преподавателей.";
+            if (deptName.includes("хирургии")) 
+                return "Программы ДПО: эндоскопическая хирургия, малоинвазивные методики, симуляционные тренинги для хирургов.";
+            if (deptName.includes("педиатрии")) 
+                return "Дополнительное образование: неонатология, детские инфекции, вакцинопрофилактика, профессиональная переподготовка по педиатрии.";
+            if (deptName.includes("фармак")) 
+                return "Повышение квалификации по клинической фармакологии, рациональное использование лекарств, фармаконадзор.";
+            if (deptName.includes("терапии")) 
+                return "Циклы ДПО: кардиология, гастроэнтерология, пульмонология, коморбидные состояния в терапии.";
+            if (deptName.includes("стоматологии")) 
+                return "Программы профпереподготовки: имплантология, ортодонтия, эстетическая стоматология, цифровые технологии.";
+            if (deptName.includes("гигиены")) 
+                return "ДПО: санитарно-эпидемиологический надзор, гигиена труда, питание, радиационная гигиена — актуальные курсы.";
+            if (deptName.includes("последипломного") || deptName.includes("ФПО"))
+                return "Ведущий центр ДПО: профессиональная переподготовка, ординатура, сертификационные циклы, инновационные образовательные модули.";
+            if (deptName.includes("кардиологии"))
+                return "Аккредитованные курсы ДПО: неотложная кардиология, хроническая сердечная недостаточность, ЭКГ-диагностика.";
+            if (deptName.includes("неврологии"))
+                return "Программы дополнительного образования по неврологии, инсульту, когнитивным расстройствам, реабилитации.";
+            if (deptName.includes("онкологии"))
+                return "Повышение квалификации: онконастороженность, паллиативная помощь, химиотерапия, скрининг.";
+            return "Кафедра реализует программы ДПО: повышение квалификации (от 36 до 144 часов) и профессиональную переподготовку (свыше 250 часов). Современные образовательные технологии и стажировки.";
+        }
+
+        // Рендер всех кафедр
+        function renderDepartments() {
+            const grid = document.getElementById('departmentsList');
+            if (!grid) return;
+            grid.innerHTML = '';
+            departmentsList.forEach(dept => {
+                const card = document.createElement('div');
+                card.className = 'department-card';
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'department-title';
+                titleDiv.textContent = dept;
+                const descDiv = document.createElement('div');
+                descDiv.className = 'department-description';
+                descDiv.textContent = getDescriptionForDepartment(dept);
+                const btn = document.createElement('button');
+                btn.className = 'feedback-btn';
+                btn.innerHTML = '🎓 Оценить ДПО кафедры';
+                btn.setAttribute('data-dept', dept);
+                btn.onclick = (function(name) {
+                    return function() { openFormModal(name); };
+                })(dept);
+                card.appendChild(titleDiv);
+                card.appendChild(descDiv);
+                card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        }
+
+        // Модальные функции
+        let currentDepartment = '';
+
+        function openFormModal(departmentName) {
+            currentDepartment = departmentName;
+            const modal = document.getElementById('formModal');
+            const spanDept = document.getElementById('selectedDepartment');
+            if (spanDept) spanDept.textContent = departmentName;
+            // Сброс формы и звёзд
+            const form = document.getElementById('feedbackForm');
+            if (form) form.reset();
+            const ratingCaption = document.getElementById('ratingCaption');
+            if (ratingCaption) ratingCaption.textContent = 'Выберите оценку программ ДПО';
+            const radios = document.querySelectorAll('input[name="rating"]');
+            radios.forEach(radio => radio.checked = false);
+            const commentField = document.getElementById('feedbackComment');
+            if (commentField) commentField.value = '';
+            modal.style.display = 'block';
+        }
+
+        function closeFormModal() {
+            const modal = document.getElementById('formModal');
+            if (modal) modal.style.display = 'none';
+            currentDepartment = '';
+        }
+
+        // Обновление текста подсказки при выборе звезды
+        function updateRatingCaption() {
+            const radios = document.querySelectorAll('input[name="rating"]');
+            let selectedValue = null;
+            for (let radio of radios) {
+                if (radio.checked) {
+                    selectedValue = radio.value;
+                    break;
+                }
+            }
+            const caption = document.getElementById('ratingCaption');
+            if (caption) {
+                if (selectedValue === '5') caption.textContent = '⭐ Превосходное ДПО (5) — отличные программы, актуальность, эксперты';
+                else if (selectedValue === '4') caption.textContent = '👍 Хорошее ДПО (4) — полезно, но есть небольшие недочёты';
+                else if (selectedValue === '3') caption.textContent = '😐 Удовлетворительное ДПО (3) — средний уровень, требует доработки';
+                else if (selectedValue === '2') caption.textContent = '😟 Неудовлетворительное ДПО (2) — много проблем, слабая организация';
+                else if (selectedValue === '1') caption.textContent = '👎 Крайне низкое качество ДПО (1) — не соответствует ожиданиям';
+                else caption.textContent = 'Выберите оценку программ ДПО';
+            }
+        }
+
+        // Обработка отправки формы (сохраняем контекст ДПО)
+        function submitForm(event) {
+            event.preventDefault();
+            
+            const ratingRadios = document.querySelectorAll('input[name="rating"]');
+            let ratingValue = null;
+            for (let radio of ratingRadios) {
+                if (radio.checked) {
+                    ratingValue = radio.value;
+                    break;
+                }
+            }
+            if (!ratingValue) {
+                alert('Пожалуйста, выберите оценку качества ДПО (от 1 до 5 звёзд)');
+                return;
+            }
+            
+            const comment = document.getElementById('feedbackComment')?.value.trim() || '';
+            if (comment === '') {
+                alert('Пожалуйста, напишите развёрнутый комментарий о программах ДПО, организации или пожеланиях');
+                return;
+            }
+            
+            const ratingText = (ratingValue === '5') ? '5 звёзд (Превосходное ДПО)' :
+                               (ratingValue === '4') ? '4 звезды (Хорошее ДПО)' :
+                               (ratingValue === '3') ? '3 звезды (Удовлетворительное ДПО)' :
+                               (ratingValue === '2') ? '2 звезды (Неудовлетворительное ДПО)' : '1 звезда (Крайне низкое качество ДПО)';
+            
+            alert(`✅ Спасибо за оценку программ ДПО!\n\nКафедра: ${currentDepartment}\nОценка ДПО: ${ratingText}\nВаш комментарий: ${comment.substring(0, 200)}${comment.length > 200 ? '…' : ''}\n\nВаше мнение поможет улучшить дополнительное профессиональное образование.`);
+            
+            closeFormModal();
+            
+            const form = document.getElementById('feedbackForm');
+            if (form) form.reset();
+            const radios = document.querySelectorAll('input[name="rating"]');
+            radios.forEach(radio => radio.checked = false);
+            const caption = document.getElementById('ratingCaption');
+            if (caption) caption.textContent = 'Выберите оценку программ ДПО';
+        }
+        
+        // Навешиваем обработчики на изменение звёзд
+        function bindStarEvents() {
+            const stars = document.querySelectorAll('input[name="rating"]');
+            stars.forEach(star => {
+                star.addEventListener('change', updateRatingCaption);
+            });
+        }
+        
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDepartments();
+            bindStarEvents();
+            const modal = document.getElementById('formModal');
+            window.onclick = function(e) {
+                if (e.target === modal) {
+                    closeFormModal();
+                }
+            };
+        });
+        
+        window.updateRatingCaption = updateRatingCaption;
+        window.openFormModal = openFormModal;
+        window.closeFormModal = closeFormModal;
+        window.submitForm = submitForm;
+    </script>
+</body>
+</html>

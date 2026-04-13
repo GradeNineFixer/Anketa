@@ -487,5 +487,170 @@
             "Кафедра экономики и управления здравоохранением с курсом последипломного образования",
             "Кафедра экстремальной медицины и безопасности жизнедеятельности"
         ];
+
+        // Функция для генерации краткого описания (можно сделать единообразным, либо вариативным)
+        function getDescriptionForDepartment(deptName) {
+            // Небольшие вариации для разнообразия, но чтобы сохранить аккуратность
+            if (deptName.includes("акушерства") && deptName.includes("гинекологии")) return "Подготовка специалистов в области женского здоровья и репродуктивной медицины.";
+            if (deptName.includes("анатомии")) return "Изучение строения человеческого тела, основа практической медицины.";
+            if (deptName.includes("хирургии")) return "Обучение оперативным вмешательствам и хирургической тактике.";
+            if (deptName.includes("педиатрии")) return "Забота о здоровье детей, диагностика и лечение болезней детского возраста.";
+            if (deptName.includes("фармак")) return "Исследование лекарственных средств и их клиническое применение.";
+            if (deptName.includes("терапии")) return "Внутренние болезни, диагностика и консервативное лечение.";
+            if (deptName.includes("стоматологии")) return "Стоматологическая помощь, современные методики лечения и протезирования.";
+            if (deptName.includes("гигиены")) return "Профилактика заболеваний, санитарно-эпидемиологическое благополучие.";
+            return "Современная образовательная программа, опытные преподаватели и научная деятельность.";
+        }
+
+        // Рендер всех кафедр
+        function renderDepartments() {
+            const grid = document.getElementById('departmentsList');
+            if (!grid) return;
+            grid.innerHTML = '';
+            departmentsList.forEach(dept => {
+                const card = document.createElement('div');
+                card.className = 'department-card';
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'department-title';
+                titleDiv.textContent = dept;
+                const descDiv = document.createElement('div');
+                descDiv.className = 'department-description';
+                descDiv.textContent = getDescriptionForDepartment(dept);
+                const btn = document.createElement('button');
+                btn.className = 'feedback-btn';
+                btn.innerHTML = '⭐ Оценить кафедру';
+                btn.setAttribute('data-dept', dept);
+                btn.onclick = (function(name) {
+                    return function() { openFormModal(name); };
+                })(dept);
+                card.appendChild(titleDiv);
+                card.appendChild(descDiv);
+                card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        }
+
+        // Модальные функции
+        let currentDepartment = '';
+
+        function openFormModal(departmentName) {
+            currentDepartment = departmentName;
+            const modal = document.getElementById('formModal');
+            const spanDept = document.getElementById('selectedDepartment');
+            if (spanDept) spanDept.textContent = departmentName;
+            // Сброс формы и звёзд
+            const form = document.getElementById('feedbackForm');
+            if (form) form.reset();
+            const ratingCaption = document.getElementById('ratingCaption');
+            if (ratingCaption) ratingCaption.textContent = 'Выберите количество звёзд';
+            // Убираем checked у радиокнопок (reset не всегда сбрасывает визуально звезды, но мы принудительно)
+            const radios = document.querySelectorAll('input[name="rating"]');
+            radios.forEach(radio => radio.checked = false);
+            // Очистить комментарий
+            const commentField = document.getElementById('feedbackComment');
+            if (commentField) commentField.value = '';
+            modal.style.display = 'block';
+        }
+
+        function closeFormModal() {
+            const modal = document.getElementById('formModal');
+            if (modal) modal.style.display = 'none';
+            currentDepartment = '';
+        }
+
+        // Обновление текста подсказки при выборе звезды
+        function updateRatingCaption() {
+            const radios = document.querySelectorAll('input[name="rating"]');
+            let selectedValue = null;
+            for (let radio of radios) {
+                if (radio.checked) {
+                    selectedValue = radio.value;
+                    break;
+                }
+            }
+            const caption = document.getElementById('ratingCaption');
+            if (caption) {
+                if (selectedValue === '5') caption.textContent = '⭐ Отлично (5)';
+                else if (selectedValue === '4') caption.textContent = '👍 Хорошо (4)';
+                else if (selectedValue === '3') caption.textContent = '😐 Удовлетворительно (3)';
+                else if (selectedValue === '2') caption.textContent = '😟 Неудовлетворительно (2)';
+                else if (selectedValue === '1') caption.textContent = '👎 Плохо (1)';
+                else caption.textContent = 'Выберите количество звёзд';
+            }
+        }
+
+        // Обработка отправки формы
+        function submitForm(event) {
+            event.preventDefault();
+            
+            // Получаем выбранную оценку
+            const ratingRadios = document.querySelectorAll('input[name="rating"]');
+            let ratingValue = null;
+            for (let radio of ratingRadios) {
+                if (radio.checked) {
+                    ratingValue = radio.value;
+                    break;
+                }
+            }
+            if (!ratingValue) {
+                alert('Пожалуйста, выберите оценку (от 1 до 5 звёзд)');
+                return;
+            }
+            
+            const comment = document.getElementById('feedbackComment')?.value.trim() || '';
+            if (comment === '') {
+                alert('Пожалуйста, напишите комментарий к оценке');
+                return;
+            }
+            
+            // Здесь можно отправить данные на сервер, но для демо показываем уведомление
+            const ratingText = (ratingValue === '5') ? '5 звёзд (Отлично)' :
+                               (ratingValue === '4') ? '4 звезды (Хорошо)' :
+                               (ratingValue === '3') ? '3 звезды (Удовлетворительно)' :
+                               (ratingValue === '2') ? '2 звезды (Неудовлетворительно)' : '1 звезда (Плохо)';
+            
+            alert(`✅ Спасибо за отзыв!\n\nКафедра: ${currentDepartment}\nОценка: ${ratingText}\nКомментарий: ${comment.substring(0, 150)}${comment.length > 150 ? '…' : ''}`);
+            
+            // В реальном проекте здесь был бы fetch / сохранение в БД, сейчас просто закрываем модалку
+            closeFormModal();
+            
+            // Можно очистить форму дополнительно
+            const form = document.getElementById('feedbackForm');
+            if (form) form.reset();
+            const radios = document.querySelectorAll('input[name="rating"]');
+            radios.forEach(radio => radio.checked = false);
+            const caption = document.getElementById('ratingCaption');
+            if (caption) caption.textContent = 'Выберите количество звёзд';
+        }
+        
+        // Навешиваем обработчики на изменение звёзд
+        function bindStarEvents() {
+            const stars = document.querySelectorAll('input[name="rating"]');
+            stars.forEach(star => {
+                star.addEventListener('change', updateRatingCaption);
+            });
+        }
+        
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDepartments();
+            bindStarEvents();
+            // Клик вне модального окна для закрытия
+            const modal = document.getElementById('formModal');
+            window.onclick = function(e) {
+                if (e.target === modal) {
+                    closeFormModal();
+                }
+            };
+        });
+        
+        // Перепривязываем события, так как модальное окно динамически не пересоздаётся, но звезды могут быть сброшены.
+        // Повторная привязка в submitForm не нужна, но после закрытия можно перепривязать, но элементы не удаляются.
+        // Дополнительно сделаем реинициализацию при открытии? Нет необходимости, т.к. радио-кнопки постоянны.
+        window.updateRatingCaption = updateRatingCaption;
+        window.openFormModal = openFormModal;
+        window.closeFormModal = closeFormModal;
+        window.submitForm = submitForm;
+    </script>
 </body>
 </html>

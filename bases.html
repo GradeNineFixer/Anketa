@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оценка МНО | Молодёжное научное общество</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
+            color: #1e2a3e;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Навигация — как в исходном ДПО */
+        nav {
+            background: #ffffff;
+            padding: 18px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(0px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        nav a {
+            margin: 0 18px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #0f3b6f;          /* исходный синий */
+            font-size: 18px;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: #0a2b44;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .page-header p {
+            color: #2c3e4e;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* Бейдж МНО в том же стиле, что был DPO-badge, но с другой иконкой */
+        .mno-badge {
+            background: linear-gradient(135deg, #1a5d9c 0%, #0f3b6f 100%);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+
+        /* Сетка карточек */
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 28px;
+        }
+
+        /* Карточка: такая же рамка как в ДПО, но с сохранением синей гаммы */
+        .department-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 24px 24px 28px 24px;
+            border: 3px solid #9bb7d4;      /* исходный цвет рамки */
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .department-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 40px -14px rgba(0, 0, 0, 0.12), 0 6px 14px rgba(0, 0, 0, 0.05);
+            border-color: #1e5b9e;          /* исходный акцент при ховере */
+        }
+
+        .department-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #0f3b6f;                 /* исходный цвет заголовка */
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1a73e8; /* синяя полоса */
+            display: inline-block;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
+        }
+
+        .department-description {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            flex-grow: 1;
+        }
+
+        /* Кнопка как в оригинале (синяя) */
+        .feedback-btn {
+            background: #1a5d9c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .feedback-btn:hover {
+            background: #0f4a7a;
+            transform: scale(1.02);
+            box-shadow: 0 6px 14px rgba(26, 93, 156, 0.25);
+        }
+
+        /* Модальное окно (полностью в стиле оригинала) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            padding: 32px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 550px;
+            animation: slideIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid #e2edf7;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -55%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0edf9;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #0a2b44;
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            font-size: 32px;
+            cursor: pointer;
+            color: #8ba0bc;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #1e5b9e;
+        }
+
+        .modal p {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .department-name {
+            color: #1a5d9c;
+            font-weight: 700;
+            background: #eef4fc;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Звёзды (как в оригинале) */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 32px;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .star-rating label:before {
+            content: "★";
+        }
+
+        .star-rating input:checked ~ label {
+            color: #f5b301;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffcd4a;
+        }
+
+        .rating-caption {
+            margin-left: 8px;
+            font-size: 0.85rem;
+            color: #4a627a;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #d4e0ec;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: #fefefe;
+            color: #1e2a3e;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .submit-btn {
+            background: #1a5d9c;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.25s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            background: #0f4a7a;
+            transform: scale(1.01);
+            box-shadow: 0 6px 12px rgba(26, 93, 156, 0.2);
+        }
+
+        @media (max-width: 760px) {
+            .container {
+                padding: 16px;
+                margin: 20px auto;
+            }
+            .department-card {
+                padding: 18px;
+            }
+            .department-title {
+                font-size: 1.2rem;
+            }
+            nav a {
+                margin: 0 10px;
+                font-size: 15px;
+            }
+            .modal-content {
+                padding: 24px;
+                width: 92%;
+            }
+            .star-rating label {
+                font-size: 28px;
+            }
+        }
+
+        .info-note {
+            font-size: 0.75rem;
+            color: #6c86a3;
+            margin-top: 12px;
+            text-align: center;
+            background: transparent;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="kaf.html">Кафедры</a>
+        <a href="teachers.html">Преподаватели</a>
+        <a href="dpo.html">Программы ДПО</a>
+        <a href="bases.html">Клинические базы</a>
+        <a href="auth.html">Авторизация</a>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>🔬 Оценка МНО <span class="mno-badge">Молодёжное научное общество</span></h1>
+            <p>Оцените научно-исследовательскую активность кафедр, вовлечённость студентов и молодых учёных, качество организации конференций, семинаров, кружков и научных мероприятий в рамках МНО</p>
+        </div>
+
+        <div class="departments-grid" id="departmentsList">
+            <!-- Список кафедр будет динамически загружен через JS -->
+        </div>
+        <div class="info-note">
+            🧪 Ваше мнение о развитии молодёжной науки: насколько активно студенты и ординаторы вовлечены в НИР, проводятся ли заседания научного кружка, поддерживает ли кафедра публикационную активность, организует ли научные школы и конференции. Оцените вклад кафедры в МНО!
+        </div>
+    </div>
+    
+    <!-- Модальное окно для оценки МНО (полностью в стиле исходного ДПО) -->
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🧪 Оценка МНО кафедры</h2>
+                <span class="close-btn" onclick="closeFormModal()">&times;</span>
+            </div>
+            <p>Кафедра: <span id="selectedDepartment" class="department-name"></span></p>
+            <p style="font-size:0.85rem; margin-top:-10px; color:#4a627a;">Оцените научно-образовательную среду, работу студенческого научного кружка, руководство НИРС, организацию конференций и поддержку молодых исследователей.</p>
+            
+            <form id="feedbackForm" onsubmit="submitForm(event)">
+                <div class="form-group">
+                    <label>🌟 Оценка деятельности кафедры в рамках МНО (1–5 звёзд):</label>
+                    <div class="star-rating">
+                        <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 - Выдающаяся научная атмосфера"></label>
+                        <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 - Хорошая организация науки"></label>
+                        <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 - Удовлетворительно, но есть резервы"></label>
+                        <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 - Слабая вовлечённость в МНО"></label>
+                        <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 - Научная работа почти не ведётся"></label>
+                    </div>
+                    <div class="rating-caption" id="ratingCaption">Оцените научную активность и работу с молодёжью</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>💬 Комментарий о научной работе, кружках, конференциях, поддержке студентов (пожелания для развития МНО):</label>
+                    <textarea id="feedbackComment" placeholder="Например: «На кафедре отличный студенческий научный кружок, регулярно проводятся заседания, помогают с публикациями. Хотелось бы больше межкафедральных конференций и вовлечения младших курсов. Спасибо за научное руководство!»"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">📄 Отправить отзыв о МНО</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Полный список кафедр (сохранён из исходного ДПО)
+        const departmentsList = [
+            "Кафедра акушерства и гинекологии лечебного факультета",
+            "Кафедра акушерства и гинекологии педиатрического факультета с курсом последипломного образования",
+            "Кафедра анатомии",
+            "Кафедра анестезиологии и реаниматологии",
+            "Кафедра биологии и ботаники",
+            "Кафедра биологической химии и клинической лабораторной диагностики",
+            "Кафедра внутренних болезней педиатрического факультета",
+            "Кафедра гигиены медико-профилактического факультета с курсом последипломного образования",
+            "Кафедра гистологии и эмбриологии",
+            "Кафедра госпитальной педиатрии и неонатологии",
+            "Кафедра госпитальной терапии",
+            "Кафедра госпитальной хирургии",
+            "Кафедра детских инфекций",
+            "Кафедра детской хирургии",
+            "Кафедра иностранных и латинского языков",
+            "Кафедра инфекционных болезней и эпидемиологии",
+            "Кафедра кардиологии ФПО",
+            "Кафедра клинической иммунологии с курсом последипломного образования",
+            "Кафедра клинической фармакологии",
+            "Кафедра лучевой диагностики",
+            "Кафедра медицинской реабилитации",
+            "Кафедра микробиологии и вирусологии",
+            "Кафедра наркологии, психотерапии",
+            "Кафедра неврологии и нейрохирургии с курсом последипломного образования",
+            "Кафедра нормальной физиологии",
+            "Кафедра общей гигиены",
+            "Кафедра общей хирургии с курсом последипломного образования",
+            "Кафедра общественного здоровья и здравоохранения с курсом последипломного образования",
+            "Кафедра онкологии и лучевой терапии",
+            "Кафедра ортопедической стоматологии",
+            "Кафедра оториноларингологии и офтальмологии",
+            "Кафедра патологической анатомии",
+            "Кафедра патологической физиологии",
+            "Кафедра поликлинического дела и скорой медицинской помощи с курсом семейной медицины",
+            "Кафедра пропедевтики внутренних болезней",
+            "Кафедра пропедевтики детских болезней, поликлинической и неотложной педиатрии",
+            "Кафедра профилактической медицины и здорового образа жизни",
+            "Кафедра психиатрии",
+            "Кафедра психологии и педагогики",
+            "Кафедра российской государственности и медицинского права",
+            "Кафедра русского языка",
+            "Кафедра сердечно-сосудистой хирургии ФПО",
+            "Кафедра сестринского дела и ухода за больными",
+            "Кафедра стоматологии и челюстно-лицевой хирургии с курсом последипломного образования",
+            "Кафедра судебной медицины",
+            "Кафедра терапевтической и детской стоматологии с курсом последипломного образования",
+            "Кафедра топографической анатомии и оперативной хирургии",
+            "Кафедра травматологии и ортопедии",
+            "Кафедра урологии",
+            "Кафедра факультетской педиатрии",
+            "Кафедра факультетской терапии и профессиональных болезней с курсом последипломного образования",
+            "Кафедра факультетской хирургии",
+            "Кафедра фармакологии",
+            "Кафедра фармакогнозии, фармацевтической технологии и биотехнологии",
+            "Кафедра физики, прикладной информатики и цифровой медицины",
+            "Кафедра физической культуры",
+            "Кафедра философии, биоэтики, истории и социологии",
+            "Кафедра фтизиатрии",
+            "Кафедра фундаментальной химии",
+            "Кафедра хирургических болезней педиатрического факультета",
+            "Кафедра хирургических болезней последипломного образования с курсом колопроктологии",
+            "Кафедра хирургических болезней стоматологического факультета",
+            "Кафедра экономики и управления здравоохранением с курсом последипломного образования",
+            "Кафедра экстремальной медицины и безопасности жизнедеятельности"
+        ];
+
+        // Генерация описания для МНО (научная активность, кружки, конференции)
+        function getMnoDescriptionForDepartment(deptName) {
+            if (deptName.includes("акушерства") && deptName.includes("гинекологии")) 
+                return "🔬 СНК «Актуальные вопросы репродукции»: научные семинары, публикации студентов в перинатальной медицине, участие в конференциях по охране материнства.";
+            if (deptName.includes("анатомии")) 
+                return "🧠 Научный кружок по морфологии, анатомические конкурсы, подготовка докладов для студенческих научных конференций, музейные экспозиции.";
+            if (deptName.includes("хирургии")) 
+                return "🏥 Студенческое хирургическое общество: мастер-классы по лапароскопии, клинические разборы, участие во всероссийских олимпиадах по хирургии.";
+            if (deptName.includes("педиатрии")) 
+                return "👶 Молодёжная научная школа по педиатрии, исследования в области неонатологии, публикации студентов в журналах РИНЦ, конференции.";
+            if (deptName.includes("фармак")) 
+                return "💊 Научное общество клинических фармакологов: экспериментальные работы, анализ лекарственных средств, студенческие гранты.";
+            if (deptName.includes("терапии")) 
+                return "🫀 Терапевтический научный кружок: разбор клинических случаев, учебно-исследовательские работы по кардиологии, пульмонологии.";
+            if (deptName.includes("стоматологии")) 
+                return "🦷 СНО стоматологического факультета: цифровая стоматология, научные проекты по имплантологии, ежегодная студенческая конференция.";
+            if (deptName.includes("гигиены")) 
+                return "🌍 Научно-исследовательская работа в области гигиены: экологические проекты, оценка факторов риска, участие в грантовых конкурсах.";
+            if (deptName.includes("последипломного") || deptName.includes("ФПО"))
+                return "🎓 Молодёжное научное направление для ординаторов и аспирантов: школа молодого учёного, публикационная активность, сопровождение научных статей.";
+            if (deptName.includes("кардиологии"))
+                return "❤️ Кардиологический научный кружок: обсуждение современных рекомендаций, подготовка тезисов, студенческие исследования факторов риска.";
+            if (deptName.includes("неврологии"))
+                return "🧠 Неврологическая школа МНО: клинические разборы, нейровизуализация, студенческие проекты по реабилитации.";
+            if (deptName.includes("онкологии"))
+                return "⚕️ Молодёжное онкологическое общество: онконастороженность, исследовательские работы, участие в конференциях по паллиативной помощи.";
+            if (deptName.includes("патологической анатомии"))
+                return "🔬 Патоморфологический кружок: микроскопия, клинико-анатомические конференции, научные работы по аутопсийным исследованиям.";
+            if (deptName.includes("микробиологии"))
+                return "🦠 СНО по микробиологии: изучение антибиотикорезистентности, студенческие проекты по санитарной микробиологии, конкурсы.";
+            if (deptName.includes("нормальной физиологии"))
+                return "⚡ Физиологическая школа: научные эксперименты, УИРС по функциональной диагностике, олимпиадное движение.";
+            return "🧪 Кафедра активно развивает молодёжную науку: студенческие научные кружки, подготовка публикаций, участие в конференциях, исследовательские гранты, поддержка инициатив МНО. Ваша оценка поможет усилить научный потенциал!";
+        }
+
+        function renderDepartments() {
+            const grid = document.getElementById('departmentsList');
+            if (!grid) return;
+            grid.innerHTML = '';
+            departmentsList.forEach(dept => {
+                const card = document.createElement('div');
+                card.className = 'department-card';
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'department-title';
+                titleDiv.textContent = dept;
+                const descDiv = document.createElement('div');
+                descDiv.className = 'department-description';
+                descDiv.textContent = getMnoDescriptionForDepartment(dept);
+                const btn = document.createElement('button');
+                btn.className = 'feedback-btn';
+                btn.innerHTML = '🔬 Оценить МНО кафедры';
+                btn.setAttribute('data-dept', dept);
+                btn.onclick = (function(name) {
+                    return function() { openFormModal(name); };
+                })(dept);
+                card.appendChild(titleDiv);
+                card.appendChild(descDiv);
+                card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        }
+
+        let currentDepartment = '';
+
+        function openFormModal(departmentName) {
+            currentDepartment = departmentName;
+            const modal = document.getElementById('formModal');
+            const spanDept = document.getElementById('selectedDepartment');
+            if (spanDept) spanDept.textContent = departmentName;
+            const form = document.getElementById('feedbackForm');
+            if (form) form.reset();
+            const ratingCaption = document.getElementById('ratingCaption');
+            if (ratingCaption) ratingCaption.textContent = 'Оцените научную активность и работу с молодёжью';
+            const radios = document.querySelectorAll('input[name="rating"]');
+            radios.forEach(radio => radio.checked = false);
+            const commentField = document.getElementById('feedbackComment');
+            if (commentField) commentField.value = '';
+            modal.style.display = 'block';
+        }
+
+        function closeFormModal() {
+            const modal = document.getElementById('formModal');
+            if (modal) modal.style.display = 'none';
+            currentDepartment = '';
+        }
+
+        function updateRatingCaption() {
+            const radios = document.querySelectorAll('input[name="rating"]');
+            let selectedValue = null;
+            for (let radio of radios) {
+                if (radio.checked) {
+                    selectedValue = radio.value;
+                    break;
+                }
+            }
+            const caption = document.getElementById('ratingCaption');
+            if (caption) {
+                if (selectedValue === '5') caption.textContent = '⭐ Выдающаяся научная среда — активные кружки, конференции, публикации, поддержка молодых учёных.';
+                else if (selectedValue === '4') caption.textContent = '👍 Хороший уровень МНО — есть научные мероприятия, но можно больше вовлекать студентов.';
+                else if (selectedValue === '3') caption.textContent = '😐 Удовлетворительно — формальные заседания, слабая публикационная активность.';
+                else if (selectedValue === '2') caption.textContent = '😟 Низкая активность — кружки проводятся редко, нет системной работы с молодёжью.';
+                else if (selectedValue === '1') caption.textContent = '👎 Научная деятельность практически отсутствует, нет интереса к МНО.';
+                else caption.textContent = 'Оцените научную активность и работу с молодёжью';
+            }
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            
+            const ratingRadios = document.querySelectorAll('input[name="rating"]');
+            let ratingValue = null;
+            for (let radio of ratingRadios) {
+                if (radio.checked) {
+                    ratingValue = radio.value;
+                    break;
+                }
+            }
+            if (!ratingValue) {
+                alert('Пожалуйста, выберите оценку деятельности кафедры в рамках Молодёжного научного общества (от 1 до 5 звёзд)');
+                return;
+            }
+            
+            const comment = document.getElementById('feedbackComment')?.value.trim() || '';
+            if (comment === '') {
+                alert('Пожалуйста, напишите развёрнутый комментарий о научной работе кафедры, студенческих кружках, конференциях или предложениях по развитию МНО');
+                return;
+            }
+            
+            let ratingText = '';
+            if (ratingValue === '5') ratingText = '5 звёзд (Выдающаяся научная атмосфера)';
+            else if (ratingValue === '4') ratingText = '4 звезды (Хорошая организация науки)';
+            else if (ratingValue === '3') ratingText = '3 звезды (Удовлетворительно, есть резервы)';
+            else if (ratingValue === '2') ratingText = '2 звезды (Слабая вовлечённость в МНО)';
+            else ratingText = '1 звезда (Научная работа почти не ведётся)';
+            
+            alert(`✅ Спасибо за оценку Молодёжного научного общества!\n\nКафедра: ${currentDepartment}\nОценка научной активности: ${ratingText}\nВаш отзыв: ${comment.substring(0, 200)}${comment.length > 200 ? '…' : ''}\n\nВаше мнение поможет усилить научное развитие и поддержку студентов.`);
+            
+            closeFormModal();
+            
+            const form = document.getElementById('feedbackForm');
+            if (form) form.reset();
+            const radios = document.querySelectorAll('input[name="rating"]');
+            radios.forEach(radio => radio.checked = false);
+            const caption = document.getElementById('ratingCaption');
+            if (caption) caption.textContent = 'Оцените научную активность и работу с молодёжью';
+        }
+        
+        function bindStarEvents() {
+            const stars = document.querySelectorAll('input[name="rating"]');
+            stars.forEach(star => {
+                star.addEventListener('change', updateRatingCaption);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDepartments();
+            bindStarEvents();
+            const modal = document.getElementById('formModal');
+            window.onclick = function(e) {
+                if (e.target === modal) {
+                    closeFormModal();
+                }
+            };
+        });
+        
+        window.updateRatingCaption = updateRatingCaption;
+        window.openFormModal = openFormModal;
+        window.closeFormModal = closeFormModal;
+        window.submitForm = submitForm;
+    </script>
+</body>
+</html>

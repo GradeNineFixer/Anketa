@@ -367,10 +367,10 @@
     <nav>
         <a href="index.html">Главная</a>
         <a href="kaf.html">Кафедры</a>
-        <a href="history.html">Преподаватели</a>
-        <a href="artists.html">Программы ДПО</a>
-        <a href="poll.html">Клинические базы</a>
-        <a href="video.html">Авторизация</a>
+        <a href="teachers.html">Преподаватели</a>
+        <a href="dpo.html">Программы ДПО</a>
+        <a href="bases.html">Клинические базы</a>
+        <a href="auth.html">Авторизация</a>
     </nav>
     
     <div class="container">
@@ -380,7 +380,7 @@
         </div>
 
         <div class="departments-grid" id="departmentsList">
-            <!-- Список кафедр будет вставлен через JS, но для надёжности продублирую статически, чтобы сохранить читаемость -->
+            
         </div>
         <div class="info-note">★ Нажмите на звезду, чтобы выбрать оценку. Ваше мнение важно для нас!</div>
     </div>
@@ -395,7 +395,6 @@
             <p>Кафедра: <span id="selectedDepartment" class="department-name"></span></p>
             
             <form id="feedbackForm" onsubmit="submitForm(event)">
-                <!-- Звёздная оценка (5 баллов) -->
                 <div class="form-group">
                     <label>🌟 Оценка (1–5 звёзд):</label>
                     <div class="star-rating">
@@ -419,7 +418,7 @@
     </div>
 
     <script>
-        // Полный список кафедр по вашему заданию
+        // Полный список кафедр
         const departmentsList = [
             "Кафедра акушерства и гинекологии лечебного факультета",
             "Кафедра акушерства и гинекологии педиатрического факультета с курсом последипломного образования",
@@ -537,7 +536,7 @@
             const modal = document.getElementById('formModal');
             const spanDept = document.getElementById('selectedDepartment');
             if (spanDept) spanDept.textContent = departmentName;
-            // Сброс формы и звёзд
+            
             const form = document.getElementById('feedbackForm');
             if (form) form.reset();
             const ratingCaption = document.getElementById('ratingCaption');
@@ -557,7 +556,7 @@
             currentDepartment = '';
         }
 
-        // Обновление текста подсказки при выборе звезды
+        
         function updateRatingCaption() {
             const radios = document.querySelectorAll('input[name="rating"]');
             let selectedValue = null;
